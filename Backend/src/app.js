@@ -1,13 +1,17 @@
 const express = require("express");
 const cors = require("cors");
 
+const resumeRoutes = require("./routes/resume.routes");
+
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.send("Backend is Running Successfully");
+  res.send("Backend Running");
 });
+
+app.use("/api/resume", resumeRoutes);
 
 module.exports = app;
