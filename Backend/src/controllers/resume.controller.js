@@ -1,8 +1,6 @@
-const resumeParserService = require(
-  "../services/resumeParser.service"
-);
+import * as resumeParserService from "../services/resumeParser.service.js";
 
-exports.uploadResume = async (req, res) => {
+export const uploadResume = async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({
@@ -10,10 +8,11 @@ exports.uploadResume = async (req, res) => {
         message: "No file uploaded",
       });
     }
-
+     
     const result =
       await resumeParserService.handleResumeUpload(
-        req.file
+        req.file,
+        req.user.id
       );
 
     return res.status(200).json({

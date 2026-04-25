@@ -1,15 +1,10 @@
-const express = require("express");
+import express from "express";
+import authMiddleware from "../middleware/auth.middleware.js";
+import upload from "../middleware/upload.middleware.js";
+import { uploadResume } from "../controllers/resume.controller.js";
+
 const router = express.Router();
 
-const upload = require("../middleware/upload.middleware");
-const {
-  uploadResume,
-} = require("../controllers/resume.controller");
+router.post("/upload", authMiddleware, upload.single("resume"), uploadResume);
 
-router.post(
-  "/upload",
-  upload.single("resume"),
-  uploadResume
-);
-
-module.exports = router;
+export default router;

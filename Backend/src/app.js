@@ -1,7 +1,7 @@
-const express = require("express");
-const cors = require("cors");
-
-const resumeRoutes = require("./routes/resume.routes");
+import express from "express";
+import cors from "cors";
+import resumeRoutes from "./routes/resume.routes.js";
+import authRoutes from "./routes/auth.routes.js";
 
 const app = express();
 
@@ -13,5 +13,6 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/resume", resumeRoutes);
+app.use("/api/auth", authRoutes);
 
-module.exports = app;
+export default app;

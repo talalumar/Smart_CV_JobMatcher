@@ -1,4 +1,4 @@
-exports.calculateMatchScore = (
+export const calculateMatchScore = (
   resumeSkills,
   jobs
 ) => {

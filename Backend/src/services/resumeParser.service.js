@@ -1,16 +1,11 @@
-const fs = require("fs");
-const path = require("path");
-const pdfParse = require("pdf-parse");
-const mammoth = require("mammoth");
-const extractSkills = require(
-  "../utils/skillExtractor"
-);
-const jobFetcherService = require(
-  "./jobFetcher.service"
-);
-const jobMatcherService = require(
-  "./jobMatcher.service"
-);
+import fs from "fs";
+import path from "path";
+import pdfParse from "pdf-parse/lib/pdf-parse.js";
+import Resume from "../models/Resume.js";
+import mammoth from "mammoth";
+import { calculateMatchScore } from "./jobMatcher.service.js";
+import { fetchJobs } from "./jobFetcher.service.js";
+import { extractResumeData } from "./gemini.service.js";
 
 const cleanText = (text) => {
   return text.replace(/\s+/g, " ").trim();
@@ -19,24 +14,17 @@ const cleanText = (text) => {
 const parsePdf = async (filePath) => {
   const dataBuffer = fs.readFileSync(filePath);
   const data = await pdfParse(dataBuffer);
-
   return cleanText(data.text);
 };
 
 const parseDocx = async (filePath) => {
-  const result = await mammoth.extractRawText({
-    path: filePath,
-  });
-
+  const result = await mammoth.extractRawText({ path: filePath });
   return cleanText(result.value);
 };
 
-exports.handleResumeUpload = async (file) => {
+export const handleResumeUpload = async (file, userId) => {
   const filePath = file.path;
-
-  const fileExtension = path
-    .extname(file.originalname)
-    .toLowerCase();
+  const fileExtension = path.extname(file.originalname).toLowerCase();
 
   let extractedText = "";
 
@@ -48,24 +36,38 @@ exports.handleResumeUpload = async (file) => {
     throw new Error("Unsupported file format");
   }
 
-  const skills = extractSkills(extractedText);
+  // ✅ Call directly — no service prefix
+  const aiData = await extractResumeData(extractedText);
 
-  const jobs = await jobFetcherService.fetchJobs(
-  skills
-);
+  const skills = aiData.skills || [];
+  const experienceLevel = aiData.experienceLevel || "";
+  const jobRoles = aiData.jobRoles || [];
+  const summary = aiData.summary || "";
 
-const matchedJobs =
-  jobMatcherService.calculateMatchScore(
+  // ✅ Call directly — no service prefix
+  const jobs = await fetchJobs(skills);
+  const matchedJobs = calculateMatchScore(skills, jobs);
+
+  const savedResume = await Resume.create({
+    userId,
+    fileName: file.filename,
+    originalName: file.originalname,
+    filePath: file.path,
+    extractedText,
     skills,
-    jobs
-  );
+    matchedJobs,
+  });
 
   return {
-  fileName: file.filename,
-  originalName: file.originalname,
-  filePath: file.path,
-  extractedText,
-  skills,
-  matchedJobs,
-};
+    fileName: file.filename,
+    originalName: file.originalname,
+    filePath: file.path,
+    extractedText,
+    skills,
+    experienceLevel,
+    jobRoles,
+    summary,
+    matchedJobs,
+    savedResume,
+  };
 };

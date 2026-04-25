@@ -1,6 +1,6 @@
-const axios = require("axios");
+import axios from "axios";
 
-exports.fetchJobs = async (skills) => {
+export const fetchJobs = async (skills) => {
   try {
     const searchQuery = skills.slice(0, 3).join(" ");
 
