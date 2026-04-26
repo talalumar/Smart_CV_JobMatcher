@@ -4,7 +4,7 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-export const extractResumeData = async (
+export const getATSScore = async (
   resumeText
 ) => {
   try {
@@ -17,29 +17,26 @@ export const extractResumeData = async (
           {
             role: "user",
             content: `
-You are an expert ATS resume analyzer.
+You are an expert ATS Resume Analyzer.
 
 Analyze this resume and return ONLY valid JSON.
-Do not return markdown.
-Do not return explanation.
-Do not return extra text.
 
 Required JSON format:
 
 {
-  "skills": [],
-  "experienceLevel": "",
-  "primaryRole": "",
-  "secondaryRoles": [],
-  "summary": ""
+  "atsScore": 0,
+  "issues": [],
+  "suggestions": [],
+  "strengths": []
 }
 
 Rules:
-- primaryRole = best main job role based on resume
-- secondaryRoles = related fallback job roles
-- skills = technical skills only
-- experienceLevel = Entry-Level / Mid-Level / Senior-Level
-- summary = short professional summary
+- atsScore must be from 0 to 100
+- issues = current problems in resume
+- suggestions = professional improvements
+- strengths = strong areas already present
+- do not return markdown
+- do not return explanation
 
 Resume:
 ${resumeText}
@@ -62,12 +59,15 @@ ${resumeText}
 
   } catch (error) {
     console.error(
-      "Groq Resume Analysis Error:",
+      "ATS Score Error:",
       error
     );
 
-    throw new Error(
-      "Resume analysis failed"
-    );
+    return {
+      atsScore: 0,
+      issues: [],
+      suggestions: [],
+      strengths: [],
+    };
   }
 };
