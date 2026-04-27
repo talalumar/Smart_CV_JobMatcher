@@ -1,44 +1,30 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
-
-import Sidebar from "@/components/Sidebar";
 import ResumeUploader from "@/components/ResumeUploader";
 import ATSCard from "@/components/ATSCard";
-import JobCard from "@/components/JobCard";
+// import ResultCard from "@/components/ResultCard";
 import SuggestionCard from "@/components/SuggestionCard";
 
-export default function Dashboard() {
-    const { token } = useAuth();
-    const router = useRouter();
+export default function DashboardPage() {
+  return (
+    <div style={{ padding: "40px", maxWidth: "1200px", margin: "0 auto" }}>
+      <h1 style={{ fontSize: "36px", fontWeight: "bold", marginBottom: "30px" }}>
+        Smart CV Job Matcher Dashboard
+      </h1>
 
-    useEffect(() => {
-        if (!token) {
-            router.push("/login");
-        }
-    }, [token, router]);
+      <ResumeUploader />
 
-    return (
-        <div className="flex min-h-screen">
-            <Sidebar />
+      <div style={{ marginTop: "30px" }}>
+        <ATSCard />
+      </div>
 
-            <main className="flex-1 p-8 bg-gray-100">
-                <h1 className="text-3xl font-bold mb-8">
-                    Smart CV Job Matcher
-                </h1>
+      {/* <div style={{ marginTop: "30px" }}>
+        <ResultCard />
+      </div> */}
 
-                <ResumeUploader />
-
-                <div className="mt-8">
-                    <ATSCard />
-                </div>
-
-                <div className="mt-8">
-                    <JobCard />
-                </div>
-            </main>
-        </div>
-    );
+      <div style={{ marginTop: "30px" }}>
+        <SuggestionCard />
+      </div>
+    </div>
+  );
 }

@@ -34,7 +34,7 @@ export default function Login() {
           );
 
         login(
-          res.data.token
+          res.data.data.token
         );
 
         router.push(

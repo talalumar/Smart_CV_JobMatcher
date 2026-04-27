@@ -1,59 +1,52 @@
 "use client";
 
 import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
+    createContext,
+    useContext,
+    useState,
+    useEffect,
 } from "react";
 
 const AuthContext =
-  createContext();
+    createContext();
 
 export const AuthProvider = ({
-  children,
+    children,
 }) => {
-  const [token, setToken] =
-    useState("");
+    const [token, setToken] = useState(() => {
+        if (typeof window !== "undefined") {
+            return localStorage.getItem("token") || "";
+        }
+        return "";
+    });
 
-  useEffect(() => {
-    const savedToken =
-      localStorage.getItem(
-        "token"
-      );
+    const login = (newToken) => {
+        localStorage.setItem(
+            "token",
+            newToken
+        );
+        setToken(newToken);
+    };
 
-    if (savedToken) {
-      setToken(savedToken);
-    }
-  }, []);
+    const logout = () => {
+        localStorage.removeItem(
+            "token"
+        );
+        setToken("");
+    };
 
-  const login = (newToken) => {
-    localStorage.setItem(
-      "token",
-      newToken
+    return (
+        <AuthContext.Provider
+            value={{
+                token,
+                login,
+                logout,
+            }}
+        >
+            {children}
+        </AuthContext.Provider>
     );
-    setToken(newToken);
-  };
-
-  const logout = () => {
-    localStorage.removeItem(
-      "token"
-    );
-    setToken("");
-  };
-
-  return (
-    <AuthContext.Provider
-      value={{
-        token,
-        login,
-        logout,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
 };
 
 export const useAuth = () =>
-  useContext(AuthContext);
+    useContext(AuthContext);
