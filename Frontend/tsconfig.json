@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-, "src/services/api.js", "src/components/JobCard.jsx"  ],
+, "src/services/api.js", "src/components/JobCard.jsx", "src/components/ResultCard.jsx"  ],
   "exclude": ["node_modules"]
 }
