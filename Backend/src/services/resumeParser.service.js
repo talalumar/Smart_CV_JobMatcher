@@ -7,7 +7,6 @@ import Resume from "../models/Resume.js";
 import { fetchPriorityJobs } from "./jobFetcher.service.js";
 import { extractResumeData } from "./gemini.service.js";
 import { getAIMatchScore } from "./aiMatchScore.service.js";
-import { getATSScore } from "./atsScore.service.js";
 
 const cleanText = (text) => {
   return text.replace(/\s+/g, " ").trim();
@@ -54,7 +53,8 @@ export const handleResumeUpload = async (
   }
 
   /*
-  STEP 2 → AI Resume Analysis
+  STEP 2 → Full AI Resume Analysis
+  (Resume Analysis + ATS + Suggestions)
   */
 
   const aiData = await extractResumeData(
@@ -62,6 +62,7 @@ export const handleResumeUpload = async (
   );
 
   const skills = aiData.skills || [];
+
   const experienceLevel =
     aiData.experienceLevel || "";
 
@@ -71,16 +72,47 @@ export const handleResumeUpload = async (
   const secondaryRoles =
     aiData.secondaryRoles || [];
 
-  const summary = aiData.summary || "";
+  const summary =
+    aiData.summary || "";
+
+  /*
+  ATS Analysis
+  */
+
+  const atsScore =
+    aiData.atsScore || 0;
+
+  const atsIssues =
+    aiData.atsIssues || [];
+
+  const atsSuggestions =
+    aiData.atsSuggestions || [];
+
+  const atsStrengths =
+    aiData.atsStrengths || [];
+
+  /*
+  AI Suggestions Engine
+  */
+
+  const careerSuggestions =
+    aiData.careerSuggestions || [];
+
+  const improvementPlan =
+    aiData.improvementPlan || [];
+
+  const interviewTips =
+    aiData.interviewTips || [];
 
   /*
   STEP 3 → Priority-Based Job Search
   */
 
-  const jobs = await fetchPriorityJobs(
-    primaryRole,
-    secondaryRoles
-  );
+  const jobs =
+    await fetchPriorityJobs(
+      primaryRole,
+      secondaryRoles
+    );
 
   /*
   STEP 4 → AI Match Score Per Job
@@ -119,7 +151,7 @@ export const handleResumeUpload = async (
   }
 
   /*
-  STEP 5 → Sort Jobs by Best Match
+  STEP 5 → Sort Best Matches First
   */
 
   matchedJobs.sort(
@@ -128,27 +160,7 @@ export const handleResumeUpload = async (
   );
 
   /*
-  STEP 6 → ATS Score Analysis
-  */
-
-  const atsData = await getATSScore(
-    extractedText
-  );
-
-  const atsScore =
-    atsData.atsScore || 0;
-
-  const atsIssues =
-    atsData.issues || [];
-
-  const atsSuggestions =
-    atsData.suggestions || [];
-
-  const atsStrengths =
-    atsData.strengths || [];
-
-  /*
-  STEP 7 → Save Everything
+  STEP 6 → Save Everything
   */
 
   const savedResume =
@@ -177,10 +189,14 @@ export const handleResumeUpload = async (
       atsIssues,
       atsSuggestions,
       atsStrengths,
+
+      careerSuggestions,
+      improvementPlan,
+      interviewTips,
     });
 
   /*
-  STEP 8 → Return Final Response
+  STEP 7 → Final Response
   */
 
   return {
@@ -206,6 +222,10 @@ export const handleResumeUpload = async (
     atsIssues,
     atsSuggestions,
     atsStrengths,
+
+    careerSuggestions,
+    improvementPlan,
+    interviewTips,
 
     savedResume,
   };

@@ -168,6 +168,9 @@ const resumeSchema =
         type: [String],
         default: [],
       },
+      careerSuggestions: [String],
+      improvementPlan: [String],
+      interviewTips: [String],
     },
     {
       timestamps: true,
