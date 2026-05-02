@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import ResumeUploader from "@/components/ResumeUploader";
 import ATSCard from "@/components/ATSCard";
 import ResultCard from "@/components/ResultCard";
@@ -11,15 +13,27 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-6 py-8">
-          <h1 className="text-4xl font-bold text-gray-800">
-            Smart CV Job Matcher
-          </h1>
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div>
+              <h1 className="text-4xl font-bold text-gray-800">
+                Smart CV Job Matcher
+              </h1>
 
-          <p className="text-gray-500 mt-2 text-lg">
-            Upload your resume, get ATS analysis,
-            AI-powered job matching, and personalized
-            improvement suggestions.
-          </p>
+              <p className="text-gray-500 mt-2 text-lg max-w-3xl">
+                Upload your resume, get ATS analysis,
+                AI-powered job matching, personalized
+                suggestions, and practice with dynamic
+                AI-powered interview preparation.
+              </p>
+            </div>
+
+            {/* Interview Button */}
+            <Link href="/interview">
+              <button className="bg-black text-white px-7 py-3 rounded-xl font-semibold hover:bg-gray-800 transition duration-300 shadow-md">
+                Start AI Interview
+              </button>
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -48,7 +62,7 @@ export default function DashboardPage() {
         {/* Matched Jobs Section */}
         <div className="bg-white rounded-2xl shadow-md p-6">
           <h2 className="text-2xl font-semibold mb-4">
-            Matched Jobs
+            Resume Analysis & Matched Jobs
           </h2>
 
           <ResultCard />

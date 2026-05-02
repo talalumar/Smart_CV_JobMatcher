@@ -3,36 +3,15 @@ import authMiddleware from "../middleware/auth.middleware.js";
 import {
   getInterviewQuestions,
   submitInterviewAnswer,
+  submitFullInterview,
 } from "../controllers/interview.controller.js";
 
 const router = express.Router();
 
-/*
-========================================
-1. Generate Personalized Interview Questions
-========================================
-GET /api/interview/questions
-========================================
-*/
+router.get("/questions", authMiddleware, getInterviewQuestions);
+router.post("/evaluate", authMiddleware, submitInterviewAnswer);
 
-router.get(
-  "/questions",
-  authMiddleware,
-  getInterviewQuestions
-);
-
-/*
-========================================
-2. Submit Interview Answer + Get Score
-========================================
-POST /api/interview/evaluate
-========================================
-*/
-
-router.post(
-  "/evaluate",
-  authMiddleware,
-  submitInterviewAnswer
-);
+// ✅ New bulk evaluation route
+router.post("/evaluate-full", authMiddleware, submitFullInterview);
 
 export default router;
