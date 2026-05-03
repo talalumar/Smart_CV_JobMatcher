@@ -5,7 +5,7 @@ import Vapi from "@vapi-ai/web";
 import useResumeStore from "@/store/resumeStore";
 
 export default function VoiceAssistant() {
-  const [status, setStatus] = useState("idle"); // idle | connecting | active | speaking
+  const [status, setStatus] = useState("idle");
   const [transcript, setTranscript] = useState("");
   const [showTooltip, setShowTooltip] = useState(false);
   const vapiRef = useRef(null);
@@ -32,18 +32,83 @@ export default function VoiceAssistant() {
     return () => vapi.stop();
   }, []);
 
-  const buildAssistantOverrides = () => {
-    if (!resumeData) return {};
+  const buildAssistantConfig = () => {
+    // If no resume uploaded yet
+    if (!resumeData) {
+      return {
+        assistantId: process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID,
+        assistantOverrides: {
+          firstMessage: "Hi! I'm your Smart CV Assistant. Please upload your resume first so I can give you personalized advice. How can I help you today?",
+        },
+      };
+    }
+
+    const skills = (resumeData.skills || []).join(", ");
+    const atsIssues = (resumeData.atsIssues || []).join(", ");
+    const atsSuggestions = (resumeData.atsSuggestions || []).join(", ");
+    const atsStrengths = (resumeData.atsStrengths || []).join(", ");
+    const matchedJobs = (resumeData.matchedJobs || [])
+      .slice(0, 3)
+      .map((j) => j.title)
+      .join(", ");
 
     return {
-      variableValues: {
-        userName: "there",
-        skills: (resumeData.skills || []).join(", "),
-        experienceLevel: resumeData.experienceLevel || "entry-level",
-        primaryRole: resumeData.primaryRole || "software developer",
-        atsScore: resumeData.atsScore || "unknown",
-        atsIssues: (resumeData.atsIssues || []).join(", "),
-        atsSuggestions: (resumeData.atsSuggestions || []).join(", "),
+      assistantId: process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID,
+      assistantOverrides: {
+        firstMessage: `Hi! I've analyzed your resume. You're a ${resumeData.primaryRole || "developer"} with an ATS score of ${resumeData.atsScore || "N/A"}/100. I can help you improve your resume, boost your ATS score, or prepare you for interviews. What would you like to work on?`,
+
+        model: {
+          provider: "google",
+          model: "gemini-2.0-flash",
+          systemPrompt: `You are an expert AI career coach and interview preparation assistant for Smart CV Job Matcher.
+
+You have already analyzed the candidate's resume. Here is their complete profile:
+
+=== CANDIDATE PROFILE ===
+Name: ${resumeData.originalName || "Candidate"}
+Primary Role: ${resumeData.primaryRole || "Not specified"}
+Experience Level: ${resumeData.experienceLevel || "Not specified"}
+Skills: ${skills || "Not specified"}
+
+=== ATS ANALYSIS ===
+ATS Score: ${resumeData.atsScore || "N/A"}/100
+ATS Strengths: ${atsStrengths || "None listed"}
+ATS Issues: ${atsIssues || "None listed"}
+ATS Suggestions: ${atsSuggestions || "None listed"}
+
+=== JOB MATCHES ===
+Top Matched Jobs: ${matchedJobs || "None yet"}
+
+=== RESUME SUMMARY ===
+${resumeData.summary || "No summary available"}
+
+=== YOUR RESPONSIBILITIES ===
+
+1. RESUME IMPROVEMENT:
+   - Give specific advice based on their actual skills and issues above
+   - Tell them exactly what to fix in their resume
+   - Explain how to improve their ATS score from ${resumeData.atsScore || "current"} to higher
+
+2. INTERVIEW PREPARATION:
+   - When user says a job title (e.g. "I want to prepare for Flutter developer"), immediately start asking interview questions for that role
+   - Ask one question at a time
+   - After user answers, give feedback and the ideal answer
+   - Then ask the next question
+   - Cover: technical, behavioral, and situational questions
+
+3. ATS COACHING:
+   - Explain what ATS is and how it works
+   - Give specific keyword suggestions based on their skills
+   - Tell them which of their current issues (${atsIssues}) to fix first
+
+=== CONVERSATION RULES ===
+- Keep responses under 3 sentences for voice
+- Be encouraging and specific
+- Always reference their actual data above
+- If user asks about a specific job, tailor interview questions to that job
+- Ask follow-up questions to personalize advice further
+- Never give generic advice — always use their profile data`,
+        },
       },
     };
   };
@@ -59,12 +124,8 @@ export default function VoiceAssistant() {
 
     setStatus("connecting");
 
-    const overrides = buildAssistantOverrides();
-
-    vapi.start(
-      process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID,
-      overrides
-    );
+    const { assistantId, assistantOverrides } = buildAssistantConfig();
+    vapi.start(assistantId, assistantOverrides);
   };
 
   const getButtonStyle = () => {
@@ -85,10 +146,10 @@ export default function VoiceAssistant() {
       boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
     };
 
-    if (status === "idle")        return { ...base, background: "#111" };
-    if (status === "connecting")  return { ...base, background: "#6366f1" };
-    if (status === "active")      return { ...base, background: "#22c55e" };
-    if (status === "speaking")    return { ...base, background: "#f59e0b" };
+    if (status === "idle")       return { ...base, background: "#111" };
+    if (status === "connecting") return { ...base, background: "#6366f1" };
+    if (status === "active")     return { ...base, background: "#22c55e" };
+    if (status === "speaking")   return { ...base, background: "#f59e0b" };
   };
 
   const getIcon = () => {
@@ -128,7 +189,6 @@ export default function VoiceAssistant() {
 
   return (
     <>
-      {/* Ripple animation when active */}
       {(status === "active" || status === "speaking") && (
         <div style={{
           position: "fixed",
@@ -142,7 +202,6 @@ export default function VoiceAssistant() {
         }} />
       )}
 
-      {/* Transcript bubble */}
       {transcript && (
         <div style={{
           position: "fixed",
@@ -163,7 +222,6 @@ export default function VoiceAssistant() {
         </div>
       )}
 
-      {/* Tooltip */}
       {showTooltip && status === "idle" && (
         <div style={{
           position: "fixed",
@@ -179,11 +237,12 @@ export default function VoiceAssistant() {
           fontFamily: "'DM Sans', sans-serif",
           boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
         }}>
-          🎙 Ask about resume, ATS score or interview prep
+          {resumeData
+            ? `Resume loaded · ATS ${resumeData.atsScore}/100 · Ask anything`
+            : "Upload resume first for personalized advice"}
         </div>
       )}
 
-      {/* Status label */}
       {status !== "idle" && (
         <div style={{
           position: "fixed",
@@ -203,7 +262,6 @@ export default function VoiceAssistant() {
         </div>
       )}
 
-      {/* Main button */}
       <button
         onClick={handleToggle}
         onMouseEnter={() => setShowTooltip(true)}

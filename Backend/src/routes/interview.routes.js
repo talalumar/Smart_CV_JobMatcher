@@ -8,7 +8,7 @@ import {
 
 const router = express.Router();
 
-router.get("/questions", authMiddleware, getInterviewQuestions);
+router.post("/questions", authMiddleware, getInterviewQuestions);
 router.post("/evaluate", authMiddleware, submitInterviewAnswer);
 
 // ✅ New bulk evaluation route

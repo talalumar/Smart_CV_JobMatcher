@@ -1,67 +1,65 @@
 import Groq from "groq-sdk";
+import Resume from "../models/Resume.js";
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-export const generateInterviewQuestions =
-  async (
-    primaryRole,
-    secondaryRoles = [],
-    skills = [],
-    experienceLevel = "",
-    atsIssues = [],
-    matchedJobs = []
-  ) => {
-    try {
-      /*
-      STEP 1 → Extract Weak Areas
-      */
+export const generateInterviewQuestions = async (resumeId) => {
+  try {
+    /*
+    STEP 1 → Get Resume from DB
+    */
 
-      let weakAreas = [];
+    const resume = await Resume.findById(resumeId);
 
-      matchedJobs.forEach((job) => {
-        if (job.weakAreas?.length) {
-          weakAreas.push(
-            ...job.weakAreas
-          );
-        }
-      });
+    if (!resume) {
+      throw new Error("Resume not found");
+    }
 
-      weakAreas = [
-        ...new Set(weakAreas),
-      ].slice(0, 10);
+    const {
+      primaryRole,
+      secondaryRoles = [],
+      skills = [],
+      experienceLevel = "",
+      atsIssues = [],
+      matchedJobs = [],
+    } = resume;
 
-      /*
-      STEP 2 → AI Dynamic Prompt
-      */
+    /*
+    STEP 2 → Extract Weak Areas
+    */
 
-      const response =
-        await groq.chat.completions.create({
-          model:
-            "llama-3.3-70b-versatile",
+    let weakAreas = [];
 
-          messages: [
-            {
-              role: "user",
-              content: `
+    matchedJobs.forEach((job) => {
+      if (job.weakAreas?.length) {
+        weakAreas.push(...job.weakAreas);
+      }
+    });
+
+    weakAreas = [...new Set(weakAreas)].slice(0, 10);
+
+    /*
+    STEP 3 → AI Prompt
+    */
+
+    const response = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        {
+          role: "user",
+          content: `
 You are an expert Technical Interviewer.
 
-Generate personalized interview questions based on candidate profile.
+Generate personalized interview questions.
 
-IMPORTANT RULES:
+STRICT RULES:
+- Return ONLY JSON
+- No markdown
+- No explanation
 
-1. Return ONLY valid JSON
-2. No markdown
-3. No explanation
-4. No extra text
-5. Questions must be practical and professional
-6. Questions should be DIFFERENT every time
-7. Questions should target weak areas + ATS issues
-8. Questions should match real industry interviews
-
-Return EXACTLY this structure:
-
+FORMAT:
 {
   "technicalQuestions": [],
   "projectQuestions": [],
@@ -70,56 +68,55 @@ Return EXACTLY this structure:
   "roleSpecificQuestions": []
 }
 
-Candidate Profile:
+Candidate:
 
-Primary Role:
-${primaryRole}
+Primary Role: ${primaryRole}
+Secondary Roles: ${secondaryRoles.join(", ")}
+Skills: ${skills.join(", ")}
+Experience: ${experienceLevel}
 
-Secondary Roles:
-${secondaryRoles.join(", ")}
-
-Skills:
-${skills.join(", ")}
-
-Experience Level:
-${experienceLevel}
-
-ATS Issues:
-${atsIssues.join(", ")}
-
-Weak Areas:
-${weakAreas.join(", ")}
+ATS Issues: ${atsIssues.join(", ")}
+Weak Areas: ${weakAreas.join(", ")}
 
 Generate:
-- 5 technical questions
-- 3 project-based questions
-- 3 HR questions
-- 3 weak area questions
-- 3 role-specific questions
-              `,
-            },
-          ],
+- 5 technical
+- 3 project
+- 3 HR
+- 3 weak area
+- 3 role-specific
+          `,
+        },
+      ],
+      temperature: 0.8,
+    });
 
-          temperature: 0.8,
-        });
+    const text = response.choices[0].message.content;
 
-      const text =
-        response.choices[0].message.content;
+    const cleaned = text
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
 
-      const cleaned = text
-        .replace(/```json/g, "")
-        .replace(/```/g, "")
-        .trim();
+    /*
+    STEP 4 → Safe Parse
+    */
 
+    try {
       return JSON.parse(cleaned);
-    } catch (error) {
-      console.error(
-        "Interview Generation Error:",
-        error
-      );
+    } catch (parseError) {
+      console.error("JSON Parse Error:", cleaned);
 
-      throw new Error(
-        "Failed to generate interview questions"
-      );
+      return {
+        technicalQuestions: [],
+        projectQuestions: [],
+        hrQuestions: [],
+        weakAreaQuestions: [],
+        roleSpecificQuestions: [],
+      };
     }
-  };
+  } catch (error) {
+    console.error("Interview Generation Error:", error);
+
+    throw new Error("Failed to generate interview questions");
+  }
+};

@@ -5,24 +5,41 @@ import { evaluateAnswer, evaluateFullInterview } from "../services/answerEvaluat
 export const getInterviewQuestions = async (req, res) => {
   try {
     const userId = req.user.id;
+    const { resumeId } = req.body;
 
-    const latestResume = await Resume.findOne({ userId }).sort({ createdAt: -1 });
+    /*
+    STEP 1 → Validate input
+    */
 
-    if (!latestResume) {
-      return res.status(404).json({
+    if (!resumeId) {
+      return res.status(400).json({
         success: false,
-        message: "No resume found. Please upload resume first.",
+        message: "resumeId is required",
       });
     }
 
-    const questionsData = await generateInterviewQuestions(
-      latestResume.primaryRole     || "",
-      latestResume.secondaryRoles  || [],
-      latestResume.skills          || [],
-      latestResume.experienceLevel || "",
-      latestResume.atsIssues       || [],
-      latestResume.matchedJobs     || []
-    );
+    /*
+    STEP 2 → Check resume belongs to user (IMPORTANT SECURITY)
+    */
+
+    const resume = await Resume.findOne({
+      _id: resumeId,
+      userId,
+    });
+
+    if (!resume) {
+      return res.status(404).json({
+        success: false,
+        message: "Resume not found",
+      });
+    }
+
+    /*
+    STEP 3 → Generate Interview Questions
+    */
+
+    const questionsData =
+      await generateInterviewQuestions(resumeId);
 
     return res.status(200).json({
       success: true,
@@ -31,6 +48,7 @@ export const getInterviewQuestions = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
+
     return res.status(500).json({
       success: false,
       message: "Failed to generate interview questions",
