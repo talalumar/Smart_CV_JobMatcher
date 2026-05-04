@@ -3,8 +3,7 @@
 import useResumeStore from "@/store/resumeStore";
 
 export default function ResultCard() {
-  const { resumeData } =
-    useResumeStore();
+  const { resumeData } = useResumeStore();
 
   if (!resumeData) return null;
 
@@ -16,234 +15,192 @@ export default function ResultCard() {
     matchedJobs = [],
   } = resumeData;
 
-  const getScoreColor = (
-    score
-  ) => {
-    if (score >= 80)
-      return "text-green-600 bg-green-50 border-green-200";
-    if (score >= 60)
-      return "text-yellow-600 bg-yellow-50 border-yellow-200";
-    return "text-red-600 bg-red-50 border-red-200";
+  const getScoreColor = (score) => {
+    if (score >= 80) return { bg: "#f0fdf4", text: "#15803d", border: "#bbf7d0" };
+    if (score >= 60) return { bg: "#fefce8", text: "#92400e", border: "#fde68a" };
+    return { bg: "#fef2f2", text: "#991b1b", border: "#fecaca" };
   };
 
   return (
-    <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8 mt-6">
-      {/* Header */}
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-800">
-          Resume Analysis &
-          Matched Jobs
-        </h2>
+    <div style={{ fontFamily: "'DM Sans', 'Segoe UI', sans-serif" }}>
 
-        <p className="text-gray-500 mt-2">
-          AI-powered analysis of
-          your resume and best job
-          opportunities based on
-          your profile.
-        </p>
+      {/* ── Resume Analysis ── */}
+      <p style={{
+        fontSize: "11px", fontWeight: "700", color: "#9ca3af",
+        textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 16px",
+      }}>
+        Resume Analysis
+      </p>
+
+      {/* Role grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "12px" }}>
+        {[
+          { label: "Primary Role", value: primaryRole || "N/A" },
+          { label: "Secondary Roles", value: secondaryRoles.length > 0 ? secondaryRoles.join(", ") : "N/A" },
+        ].map(({ label, value }) => (
+          <div key={label} style={{
+            background: "#f8f7f4", borderRadius: "12px",
+            padding: "16px", border: "1px solid #ebebeb",
+          }}>
+            <p style={{ fontSize: "11px", color: "#9ca3af", margin: "0 0 6px", textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</p>
+            <p style={{ fontSize: "14px", fontWeight: "700", color: "#0f0f0f", margin: 0, lineHeight: "1.4" }}>{value}</p>
+          </div>
+        ))}
       </div>
 
-      {/* Resume Analysis Section */}
-      <div className="mb-10">
-        <h3 className="text-2xl font-semibold text-gray-800 mb-6">
-          Resume Analysis
-        </h3>
+      {/* Summary */}
+      <div style={{
+        background: "#f8f7f4", borderRadius: "12px",
+        padding: "16px", border: "1px solid #ebebeb", marginBottom: "16px",
+      }}>
+        <p style={{ fontSize: "11px", color: "#9ca3af", margin: "0 0 6px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Professional Summary</p>
+        <p style={{ fontSize: "13px", color: "#374151", margin: 0, lineHeight: "1.6" }}>{summary || "N/A"}</p>
+      </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Primary Role */}
-          <div className="bg-gray-50 rounded-2xl p-5 border">
-            <p className="text-sm text-gray-500 mb-2">
-              Primary Role
-            </p>
-
-            <h4 className="text-lg font-semibold text-gray-800">
-              {primaryRole || "N/A"}
-            </h4>
-          </div>
-
-          {/* Secondary Roles */}
-          <div className="bg-gray-50 rounded-2xl p-5 border">
-            <p className="text-sm text-gray-500 mb-2">
-              Secondary Roles
-            </p>
-
-            <h4 className="text-lg font-semibold text-gray-800">
-              {secondaryRoles.length >
-              0
-                ? secondaryRoles.join(
-                    ", "
-                  )
-                : "N/A"}
-            </h4>
-          </div>
-        </div>
-
-        {/* Summary */}
-        <div className="bg-gray-50 rounded-2xl p-5 border mt-6">
-          <p className="text-sm text-gray-500 mb-2">
-            Professional Summary
-          </p>
-
-          <p className="text-gray-700 leading-relaxed">
-            {summary || "N/A"}
-          </p>
-        </div>
-
-        {/* Skills */}
-        <div className="mt-6">
-          <p className="font-semibold text-lg mb-4">
-            Skills
-          </p>
-
-          <div className="flex flex-wrap gap-3">
-            {skills.map(
-              (skill, index) => (
-                <span
-                  key={index}
-                  className="bg-blue-50 text-blue-700 border border-blue-100 px-4 py-2 rounded-full text-sm font-medium"
-                >
-                  {skill}
-                </span>
-              )
-            )}
-          </div>
+      {/* Skills */}
+      <div style={{ marginBottom: "28px" }}>
+        <p style={{ fontSize: "11px", color: "#9ca3af", margin: "0 0 10px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Skills</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+          {skills.map((skill, i) => (
+            <span key={i} style={{
+              background: "#eff6ff", color: "#1e40af", border: "1px solid #bfdbfe",
+              borderRadius: "99px", padding: "4px 12px",
+              fontSize: "12px", fontWeight: "600",
+            }}>
+              {skill}
+            </span>
+          ))}
         </div>
       </div>
 
-      {/* Matched Jobs Section */}
-      <div>
-        <h3 className="text-2xl font-semibold text-gray-800 mb-6">
-          Matched Jobs
-        </h3>
+      {/* Divider */}
+      <div style={{ height: "1px", background: "#ebebeb", margin: "0 0 24px" }} />
 
-        {matchedJobs.length ===
-        0 ? (
-          <div className="bg-gray-50 rounded-2xl p-8 text-center border">
-            <p className="text-gray-500 text-lg">
-              No matched jobs found
-              yet.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-8">
-            {matchedJobs.map(
-              (job, index) => (
-                <div
-                  key={index}
-                  className="border border-gray-200 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all duration-300"
-                >
-                  {/* Job Header */}
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div>
-                      <h4 className="text-2xl font-bold text-gray-800">
-                        {job.title}
-                      </h4>
+      {/* ── Matched Jobs ── */}
+      <p style={{
+        fontSize: "11px", fontWeight: "700", color: "#9ca3af",
+        textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 16px",
+      }}>
+        Matched Jobs ({matchedJobs.length})
+      </p>
 
-                      <p className="text-gray-500 mt-1">
-                        {
-                          job.employer
-                        }{" "}
-                        •{" "}
-                        {
-                          job.location
-                        }
-                      </p>
-                    </div>
-
-                    <div
-                      className={`px-5 py-3 rounded-2xl border font-bold text-lg ${getScoreColor(
-                        job.matchScore ||
-                          0
-                      )}`}
-                    >
-                      {
-                        job.matchScore
-                      }
-                      % Match
-                    </div>
+      {matchedJobs.length === 0 ? (
+        <div style={{
+          background: "#f8f7f4", borderRadius: "14px",
+          padding: "32px", textAlign: "center", border: "1px solid #ebebeb",
+        }}>
+          <p style={{ fontSize: "14px", color: "#9ca3af", margin: 0 }}>No matched jobs found yet.</p>
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          {matchedJobs.map((job, index) => {
+            const sc = getScoreColor(job.matchScore || 0);
+            return (
+              <div
+                key={index}
+                style={{
+                  border: "1px solid #ebebeb", borderRadius: "16px",
+                  padding: "20px", background: "#fff",
+                  transition: "box-shadow 0.2s ease",
+                }}
+                onMouseEnter={e => e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.07)"}
+                onMouseLeave={e => e.currentTarget.style.boxShadow = "none"}
+              >
+                {/* Job Header */}
+                <div style={{
+                  display: "flex", justifyContent: "space-between",
+                  alignItems: "flex-start", gap: "12px", marginBottom: "16px",
+                }}>
+                  <div style={{ flex: 1 }}>
+                    <h4 style={{ fontSize: "15px", fontWeight: "800", color: "#0f0f0f", margin: "0 0 4px" }}>
+                      {job.title}
+                    </h4>
+                    <p style={{ fontSize: "12px", color: "#6b7280", margin: 0 }}>
+                      {job.employer} · {job.location}
+                      {job.employmentType && ` · ${job.employmentType}`}
+                    </p>
                   </div>
+                  <div style={{
+                    background: sc.bg, color: sc.text, border: `1px solid ${sc.border}`,
+                    borderRadius: "10px", padding: "6px 14px",
+                    fontSize: "13px", fontWeight: "800", flexShrink: 0,
+                  }}>
+                    {job.matchScore}% match
+                  </div>
+                </div>
 
-                  {/* Matched Skills */}
-                  <div className="mt-6">
-                    <p className="font-semibold mb-3">
+                {/* Matched + Missing Skills */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "14px" }}>
+                  <div>
+                    <p style={{ fontSize: "11px", color: "#9ca3af", margin: "0 0 6px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                       Matched Skills
                     </p>
-
-                    <div className="flex flex-wrap gap-2">
-                      {(
-                        job.matchedSkills ||
-                        []
-                      ).map(
-                        (
-                          skill,
-                          i
-                        ) => (
-                          <span
-                            key={i}
-                            className="bg-green-50 text-green-700 border border-green-100 px-3 py-1 rounded-full text-sm"
-                          >
-                            {skill}
-                          </span>
-                        )
-                      )}
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+                      {(job.matchedSkills || []).map((s, i) => (
+                        <span key={i} style={{
+                          background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0",
+                          borderRadius: "99px", padding: "2px 10px", fontSize: "11px", fontWeight: "600",
+                        }}>{s}</span>
+                      ))}
                     </div>
                   </div>
-
-                  {/* Missing Skills */}
-                  <div className="mt-6">
-                    <p className="font-semibold mb-3">
+                  <div>
+                    <p style={{ fontSize: "11px", color: "#9ca3af", margin: "0 0 6px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                       Missing Skills
                     </p>
-
-                    <div className="flex flex-wrap gap-2">
-                      {(
-                        job.missingSkills ||
-                        []
-                      ).map(
-                        (
-                          skill,
-                          i
-                        ) => (
-                          <span
-                            key={i}
-                            className="bg-red-50 text-red-700 border border-red-100 px-3 py-1 rounded-full text-sm"
-                          >
-                            {skill}
-                          </span>
-                        )
-                      )}
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+                      {(job.missingSkills || []).map((s, i) => (
+                        <span key={i} style={{
+                          background: "#fef2f2", color: "#991b1b", border: "1px solid #fecaca",
+                          borderRadius: "99px", padding: "2px 10px", fontSize: "11px", fontWeight: "600",
+                        }}>{s}</span>
+                      ))}
                     </div>
                   </div>
+                </div>
 
-                  {/* Recommendation */}
-                  <div className="mt-6 bg-gray-50 rounded-2xl p-5 border">
-                    <p className="font-semibold mb-2">
+                {/* Recommendation */}
+                {(job.recommendation) && (
+                  <div style={{
+                    background: "#f8f7f4", borderRadius: "10px",
+                    padding: "12px 14px", border: "1px solid #ebebeb", marginBottom: "14px",
+                  }}>
+                    <p style={{ fontSize: "11px", color: "#9ca3af", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                       AI Recommendation
                     </p>
-
-                    <p className="text-gray-700 leading-relaxed">
-                      {job.recommendation ||
-                        "No recommendation available"}
+                    <p style={{ fontSize: "12px", color: "#374151", margin: 0, lineHeight: "1.6" }}>
+                      {job.recommendation}
                     </p>
                   </div>
+                )}
 
-                  {/* Apply Button */}
+                {/* Apply */}
+                {job.applyLink && (
                   <a
-                    href={
-                      job.applyLink
-                    }
+                    href={job.applyLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-block mt-6 bg-blue-600 hover:bg-blue-700 transition-all duration-300 text-white font-semibold px-6 py-3 rounded-2xl shadow-md"
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: "6px",
+                      background: "#0f0f0f", color: "#fff",
+                      borderRadius: "10px", padding: "9px 18px",
+                      fontSize: "12px", fontWeight: "700",
+                      textDecoration: "none", letterSpacing: "0.01em",
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
+                    onMouseLeave={e => e.currentTarget.style.opacity = "1"}
                   >
                     Apply Now
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                      <path d="M7 17L17 7M17 7H7M17 7v10" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
                   </a>
-                </div>
-              )
-            )}
-          </div>
-        )}
-      </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
