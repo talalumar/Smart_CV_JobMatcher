@@ -1,8 +1,36 @@
-import jwt from "jsonwebtoken";
+import { createClient } from "@supabase/supabase-js";
 
-export default (req, res, next) => {
+/*
+========================================
+SUPABASE CLIENT
+========================================
+*/
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
+
+/*
+========================================
+AUTH MIDDLEWARE
+========================================
+*/
+
+export default async function authMiddleware(
+  req,
+  res,
+  next
+) {
   try {
-    const authHeader = req.headers.authorization;
+    /*
+    ========================================
+    GET AUTH HEADER
+    ========================================
+    */
+
+    const authHeader =
+      req.headers.authorization;
 
     if (!authHeader) {
       return res.status(401).json({
@@ -11,7 +39,14 @@ export default (req, res, next) => {
       });
     }
 
-    const token = authHeader.split(" ")[1];
+    /*
+    ========================================
+    EXTRACT TOKEN
+    ========================================
+    */
+
+    const token =
+      authHeader.split(" ")[1];
 
     if (!token) {
       return res.status(401).json({
@@ -20,15 +55,53 @@ export default (req, res, next) => {
       });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    /*
+    ========================================
+    VERIFY USER WITH SUPABASE
+    ========================================
+    */
 
-    req.user = decoded;
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser(
+      token
+    );
+
+    /*
+    ========================================
+    INVALID TOKEN
+    ========================================
+    */
+
+    if (error || !user) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    /*
+    ========================================
+    ATTACH USER TO REQUEST
+    ========================================
+    */
+
+    req.user = {
+      id: user.id, // UUID
+      email: user.email,
+    };
 
     next();
   } catch (error) {
-    return res.status(401).json({
+    console.error(
+      "Auth Middleware Error:",
+      error
+    );
+
+    return res.status(500).json({
       success: false,
-      message: "Unauthorized access",
+      message: "Authentication failed",
     });
   }
-};
+}

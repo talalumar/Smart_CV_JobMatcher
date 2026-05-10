@@ -5,12 +5,14 @@ import ResumeUploader from "@/components/ResumeUploader";
 import ATSCard from "@/components/ATSCard";
 import ResultCard from "@/components/ResultCard";
 import SuggestionCard from "@/components/SuggestionCard";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import useResumeStore from "@/store/resumeStore";
 
 export default function DashboardPage() {
   const { resumeData } = useResumeStore();
 
   return (
+    <ProtectedRoute>
     <div style={{
       minHeight: "100vh",
       background: "#f8f7f4",
@@ -250,5 +252,6 @@ export default function DashboardPage() {
 
       </div>
     </div>
+    </ProtectedRoute>
   );
 }

@@ -165,7 +165,7 @@ export const handleResumeUpload = async (
 
   const savedResume =
     await Resume.create({
-      userId,
+      userId: userId,
 
       fileName: file.filename,
       originalName:
