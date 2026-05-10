@@ -1,6 +1,6 @@
 # Smart CV Job Matcher
 
-An AI-powered CV and job matching platform. Upload your CV, get matched with relevant jobs, and manage your career — all in one place.
+An AI-powered CV and job matching platform. Upload your CV, get matched with relevant jobs, and manage your career all in one place.
 
 ---
 
