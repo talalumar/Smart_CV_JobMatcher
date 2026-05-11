@@ -4,6 +4,8 @@ const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI, {
       serverSelectionTimeoutMS: 30000,
+      socketTimeoutMS: 45000,
+      bufferCommands: false,
     });
     console.log("MongoDB Connected");
   } catch (error) {
